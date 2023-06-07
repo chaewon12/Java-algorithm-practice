@@ -59,7 +59,9 @@ public class Main {
 		visited[vertex]=true;
 		sb.append(vertex).append(" ");
 
-		for(int v :graph.get(vertex)){
+		List<Integer> vList = graph.get(vertex);
+		Collections.sort(vList);
+		for(int v :vList){
 			dfs(v,visited);
 		}
 	}
@@ -73,7 +75,9 @@ public class Main {
 
 		while (!queue.isEmpty()) {
 			int curr = queue.poll();
-			for (int v : graph.get(curr)) {
+			List<Integer> vList = graph.get(curr);
+			Collections.sort(vList);
+			for (int v : vList) {
 				if (!visited[v]) {
 					queue.offer(v);
 					visited[v] = true;
