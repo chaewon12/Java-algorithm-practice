@@ -15,9 +15,10 @@ class Solution {
 
         int column = ( S / 2 ) / 2; // c의 최댓값의 절반.
         int row = S - column;
-        int mid = column;
+        int mid = column;   // 탐색 간격
 
         while( row * column != M ){
+            // 탐색 간격을 절반으로 나눠가며 column 값을 키우거나 줄임
             mid = Math.max(1, mid / 2);
 
             if( row * column > M){
