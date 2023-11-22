@@ -1,33 +1,37 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class Solution {
     public int[] solution(int[] progresses, int[] speeds) {
-        List<Integer> answer = new ArrayList<>();
-        Queue<Integer> dayQueue = new LinkedList<>();
+        List<Integer> answerList = new ArrayList<>();
+
+        int days = 0;
+        int count = 0;
 
         for (int i = 0; i < progresses.length; i++) {
-            int requiredDay = (int) Math.ceil((double) (100 - progresses[i]) / speeds[i]); // ceil = 올림 함수
-            dayQueue.add(requiredDay);
-        }
+            int required = (int) Math.ceil((double) (100 - progresses[i]) / speeds[i]); // ceil = 올림 함수
 
-        while (!dayQueue.isEmpty()) {
-            int day = dayQueue.remove();
-            int cnt = 1;
-
-            // 배포일 이전 날짜(=동시 배포되는 작업) 카운트 
-            while (!dayQueue.isEmpty() && dayQueue.peek() <= day) {
-                dayQueue.remove();
-                cnt++;
+            if (required > days) {
+                days = required;
+                if (count > 0) {
+                    answerList.add(count);
+                    count = 0;
+                }
             }
 
-            answer.add(cnt);
+            count++;
         }
         
-        return answer.stream()
-                .mapToInt(Integer::intValue)
-                .toArray();
+        // 마지막 배포
+         if (count > 0) {
+            answerList.add(count);
+        }
+
+        int[] answer = new int[answerList.size()];
+        for (int i = 0; i < answerList.size(); i++) {
+            answer[i] = answerList.get(i);
+        }
+
+        return answer;
     }
 }
