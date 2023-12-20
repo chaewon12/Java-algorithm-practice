@@ -1,88 +1,92 @@
 import java.util.*;
-class Work {
-    String name;
-    int start;
-    int playTime;
-
-    public Work(String name, String start, String playTime) {
-        this.name = name;
-        this.start = ConvertToInt(start);
-        this.playTime = Integer.parseInt(playTime);
-    }
-
-    public int ConvertToInt(String time){
-        int hour = Integer.parseInt(time.split(":")[0]);
-        int min = Integer.parseInt(time.split(":")[1]);
-
-        return hour * 60 + min;
-    }
-}
-
 class Solution {
+    class Task {
+        int start;  // 시:분 -> 분으로 합산하여 저장
+        int playTime;
+        String name;
+
+        public Task(String name, String start, String playTime) {
+            this.name = name;
+            this.start = ConvertToInt(start);
+            this.playTime = Integer.parseInt(playTime);
+        }
+
+        private int ConvertToInt(String time) {
+            String[] split = time.split(":");
+            int hour = Integer.parseInt(split[0]);
+            int min = Integer.parseInt(split[1]);
+
+            return hour * 60 + min;
+        }
+    }
+
     public String[] solution(String[][] plans) {
         String[] answer = new String[plans.length];
-        
-        PriorityQueue<Work> todo = new PriorityQueue<Work>((o1,o2)->o1.start-o2.start);
-        Stack<Work> stop = new Stack<Work>();
-        for(String[] work : plans){
-            todo.add(new Work(work[0],work[1],work[2]));
+        PriorityQueue<Task> todoTasks = new PriorityQueue<>(Comparator.comparingInt(o -> o.start));
+        Stack<Task> stoppedTasks = new Stack<>();
+
+        for (String[] plan : plans) {
+            todoTasks.add(new Task(plan[0], plan[1], plan[2]));
         }
- 
+
+        int currTime = 0;
         int idx = 0;
-        int nowTime = 0;
-        while(!todo.isEmpty()){
-            Work nowWork = todo.poll();
-            
-            if (todo.isEmpty()) {                
-                answer[idx++] = nowWork.name;                 
-                continue;            
+        while (!todoTasks.isEmpty()) {
+            Task currTask = todoTasks.poll();
+
+            if (todoTasks.isEmpty()) {
+                answer[idx++] = currTask.name;
+                continue;
             }
-           
-            Work nextWork = todo.peek();
-            
-            if(nextWork.start < nowWork.start + nowWork.playTime){
-                nowWork.playTime -= nextWork.start - nowTime;
-                stop.push(nowWork);
-                
-                nowTime = nextWork.start;
-            }else if (nextWork.start == nowWork.start + nowWork.playTime) {                
-                answer[idx++] = nowWork.name;                
-                nowTime = nextWork.start;                                                      
-            }else{
-                answer[idx++] = nowWork.name;   
-                
-                if(stop.isEmpty()){
-                    nowTime = nextWork.start;
+
+            Task nextTask = todoTasks.peek();
+
+            // 다음 과제와 겹쳐 중단해야하는 경우
+            if (currTask.start + currTask.playTime > nextTask.start) {
+                // 다음 과제 시작 전까지의 수행시간 빼서 저장
+                currTask.playTime -= nextTask.start - currTime;
+                stoppedTasks.push(currTask);
+            } else if (currTask.start + currTask.playTime == nextTask.start) { // 다음 과제 시작에 맞춰 끝나는 경우
+                answer[idx++] = currTask.name;
+            } else { // 다음 과제 시작 전에 끝나지만 시간이 남는 경우
+                answer[idx++] = currTask.name;
+                currTime = currTask.start + currTask.playTime;
+
+                // 멈춘 과제가 없다면 바로 다음 과제로 넘어감
+                if (stoppedTasks.isEmpty()) {
+                    currTime = nextTask.start;
                     continue;
                 }
-                
-                nowTime = nowWork.start + nowWork.playTime;
-                while(!stop.isEmpty()){
-                    Work stopWork = stop.pop();
-                    
-                    if(nextWork.start < nowTime + stopWork.playTime){
-                        stopWork.playTime -= nextWork.start - nowTime;
-                        stop.push(stopWork);
-                
-                        nowTime = nextWork.start;
-                        
-                        break;
-                    }else if(nextWork.start == nowTime + stopWork.playTime){
-                        answer[idx++] = stopWork.name;                
-                        nowTime = nextWork.start;   
-                        break;
-                    }else{
-                        answer[idx++] = stopWork.name;   
-                        nowTime += stopWork.playTime;
+
+                // 남는 시간 동안 멈춘 과제 수행
+                while (!stoppedTasks.isEmpty()) {
+                    Task replayTask = stoppedTasks.pop();
+
+                    // 다음 과제와 겹쳐 중단해야하는 경우
+                    if (currTime + replayTask.playTime > nextTask.start) {
+                        // 다음 과제 시작 전까지의 수행시간 빼서 저장
+                        replayTask.playTime -= nextTask.start - currTime;
+                        stoppedTasks.push(replayTask);
+
+                        break; // 다음 과제 시작을 위해 main while문으로 빠져나감
+                    } else if (currTime + replayTask.playTime == nextTask.start) { // 다음 과제 시작에 맞춰 끝나는 경우
+                        answer[idx++] = replayTask.name;
+
+                        break; // 다음 과제 시작을 위해 main while문으로 빠져나감
+                    } else {
+                        answer[idx++] = replayTask.name;
+                        currTime += replayTask.playTime;
                     }
-                }               
+                }
             }
+            currTime = nextTask.start;
         }
-        
-        while(!stop.isEmpty()) {            
-            answer[idx++] = stop.pop().name;        
+
+        // 멈춰둔 과제
+        while (!stoppedTasks.isEmpty()) {
+            answer[idx++] = stoppedTasks.pop().name;
         }
 
         return answer;
-    }  
+    }
 }
