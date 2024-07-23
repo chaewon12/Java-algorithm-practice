@@ -28,7 +28,7 @@ public class Main {
         System.out.println(maxNumber);
     }
 
-    // 주어진 길이에서 가장 큰 완전 제곱수를 찾는 함수
+    // 가장 큰 완전 제곱수를 찾는 시작점
     static void startFind() {
         // 모든 위치와 방향에 대해 탐색
         for (int i = 0; i < N; i++) {
@@ -46,7 +46,7 @@ public class Main {
         }
     }
 
-    // 주어진 방향과 길이에 따라 탐색하며 완전 제곱수를 찾는 함수
+    // 주어진 방향에 따라 탐색하며 완전 제곱수를 찾는 함수
     static void findPerfectSquare(int startX, int startY, int deltaX, int deltaY) {
         int num = 0;
 
